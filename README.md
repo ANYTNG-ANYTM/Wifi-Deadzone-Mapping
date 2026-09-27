@@ -76,6 +76,7 @@ locally. The preview images above and below can be viewed directly on GitHub.
 ## Quick links
 
 - [Dataset schema](docs/schema.md)
+- [Collection Logs](docs/collection_log.md)
 - [Ranked dead zones CSV](outputs/ranked_dead_zones.csv)
 - [Interactive dead-zone map](outputs/maps/deadzone_map.html)
 - [Map controls and verification](docs/map_documentation.md)
