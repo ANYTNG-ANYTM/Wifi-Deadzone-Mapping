@@ -1,0 +1,130 @@
+{% macro header(this, kwargs) %}
+<style>
+  html,body{font-family:Arial,sans-serif;color:#233542}
+  .campus-panel{position:absolute;left:16px;top:16px;bottom:30px;width:320px;z-index:1000;box-sizing:border-box;background:rgba(255,255,255,.96);border:1px solid #d5dfe3;border-radius:12px;box-shadow:0 4px 24px #26374626;overflow:auto;padding:20px}
+  .campus-panel h1{font-size:23px;line-height:1.12;margin:4px 0 8px;font-weight:750;color:#193340}
+  .eyebrow{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#51727e;font-weight:bold}
+  .intro{font-size:12px;line-height:1.5;color:#54646d;margin:0 0 12px}
+  .stat-row{display:flex;gap:8px;margin:12px 0 16px}.stat{background:#f0f5f6;border-radius:7px;padding:9px 10px;flex:1;font-size:10px;color:#61717b}.stat strong{display:block;font-size:21px;color:#233e4b;line-height:1.2}
+  .section-label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:bold;margin:14px 0 8px;color:#586d76}
+  #legend-title{font-size:14px;font-weight:bold;margin-bottom:7px}.signal-gradient{height:10px;border-radius:4px;background:linear-gradient(to right,#a50026,#f46d43,#fee08b,#d9ef8b,#66bd63,#006837)}
+  .legend-labels{display:flex;justify-content:space-between;font-size:11px;margin-top:4px;color:#455e67}.legend-note{font-size:11px;line-height:1.45;margin:8px 0}
+  .hatch-key{display:inline-block;width:23px;height:12px;vertical-align:middle;margin-right:6px;background:repeating-linear-gradient(135deg,#ddd,#ddd 4px,#9a9a9a 4px,#9a9a9a 6px);border:1px solid #aaa}
+  .hint{font-size:11px;line-height:1.45;color:#61727b}.zone-button{display:flex;width:100%;text-align:left;gap:9px;background:white;border:1px solid #e1e7ea;border-radius:6px;padding:8px;margin:5px 0;cursor:pointer;color:#213a46}.zone-button:hover{background:#f0f6f8;border-color:#92adb9}.rank-badge{background:var(--zone-colour);border-radius:50%;color:white;width:24px;height:24px;line-height:24px;text-align:center;flex:none;font-size:12px;font-weight:bold}.zone-copy strong{display:block;font-size:12px}.zone-copy span{display:block;font-size:10px;color:#62727c;margin-top:3px}.minor-button{background:#f8f9fa;opacity:.85}.minor-button .rank-badge{width:18px;height:18px;line-height:18px;background:transparent;border:1px dashed #657381;color:#657381;font-size:10px}
+  details{font-size:11px;margin-top:8px}summary{cursor:pointer;color:#60727d;padding:5px 0}.context-note{border-top:1px solid #dce4e8;padding-top:10px;font-size:11px;line-height:1.45;color:#61727b;margin-top:12px}.panel-toggle{display:none;position:absolute;left:12px;top:12px;z-index:1100;border:1px solid #ccd7dd;border-radius:6px;background:white;padding:9px;cursor:pointer}
+  .zone-popup{font-family:Arial,sans-serif;font-size:12px;line-height:1.45;min-width:230px}.zone-popup h3{font-size:17px;margin:0 0 3px;color:#233e4b}.popup-subtitle{font-size:11px;color:#657580;margin-bottom:10px}.zone-popup table{width:100%;border-collapse:collapse}.zone-popup th{text-align:left;color:#62727b;font-weight:normal;padding:4px 8px 4px 0}.zone-popup td{text-align:right;font-weight:600;padding:4px 0}.zone-popup p{margin:9px 0}.zone-popup small{color:#667680;font-size:10px}.fragment-note{padding:8px;background:#eef0f2;border-left:3px dashed #7c8993;margin-bottom:8px;color:#536371;font-weight:bold}
+  .leaflet-control-layers{font:12px Arial,sans-serif;border-radius:8px!important;padding:10px!important}.leaflet-control-attribution{font-size:9px}
+  @media(max-width:760px){.campus-panel{display:none;top:58px;left:12px;bottom:auto;max-height:72vh;width:min(320px,calc(100vw - 24px))}.campus-panel.open{display:block}.panel-toggle{display:block}.leaflet-control-layers{max-width:210px;font-size:11px!important}}
+</style>
+{% endmacro %}
+
+{% macro html(this, kwargs) %}
+<button class="panel-toggle" id="panel-toggle" aria-expanded="false" aria-controls="campus-panel">Map guide & zones</button>
+<aside class="campus-panel" id="campus-panel" aria-label="Campus connectivity map guide">
+  <div class="eyebrow">IIT Guwahati · Campus survey</div>
+  <h1>Connectivity<br>along the walk</h1>
+  <p class="intro">Cellular coverage between the hostels and academic complex. WiFi is expected in building clusters.</p>
+  <p class="hint" id="basemap-note" style="display:none"></p>
+  <div class="stat-row"><div class="stat"><strong>7</strong>ranked zones</div><div class="stat"><strong>2</strong>minor fragments</div></div>
+  <div id="legend-title">Cellular signal · predicted dBm</div>
+  <div class="signal-gradient" aria-hidden="true"></div>
+  <div class="legend-labels"><span id="legend-min"></span><span id="legend-max"></span></div>
+  <p class="legend-note" id="network-note"></p>
+  <p class="legend-note"><span class="hatch-key"></span>Grey / hatched = uncertain</p>
+  <p class="hint" id="uncertainty-note"></p>
+  <p class="hint">Click a map cell for signal, uncertainty, observation distance, and reading count. Optional observed-cell markers grow with count.</p>
+  <div class="section-label">Priority zones</div>
+  <p class="hint">Outdoor cellular gaps first. Within each tier, worse signal ranks first.</p>
+  {% for zone in this.zone_rows if not zone.minor %}
+  <button class="zone-button" data-zone="{{ zone.zone_id }}" style="--zone-colour:{{ zone.colour }}">
+    <span class="rank-badge">{{ zone.rank }}</span><span class="zone-copy"><strong>{{ zone.zone_id }}</strong><span>{{ zone.context }} · {{ zone.count }} cells · {{ zone.mean }} dBm</span></span>
+  </button>
+  {% endfor %}
+  <details><summary>2 minor fragments · low confidence</summary>
+    {% for zone in this.zone_rows if zone.minor %}
+    <button class="zone-button minor-button" data-zone="{{ zone.zone_id }}" style="--zone-colour:{{ zone.colour }}">
+      <span class="rank-badge">{{ zone.rank }}</span><span class="zone-copy"><strong>{{ zone.zone_id }}</strong><span>{{ zone.count }} cells · minor fragment, low confidence</span></span>
+    </button>
+    {% endfor %}
+    <p class="hint">Low confidence in the extent of these tiny boundary fragments; their cells still meet the poor-signal rule.</p>
+  </details>
+  <div class="context-note">Red markers: tier 1 · blue markers: tier 3 · small dashed markers: minor fragments.<br><br>WiFi absence outdoors is expected. “True dead zone” applies only in building clusters. Building context uses proximity to recorded cluster observations, not building footprints.</div>
+  <details><summary>About this survey</summary><p class="hint">3,081 observed readings. Colours show 5 m model predictions; they are not direct measurements. Uncertain cells are excluded from poor-zone ranking. Uncertainty has not been independently calibrated. Base map © OpenStreetMap contributors.</p></details>
+</aside>
+{% endmacro %}
+
+{% macro script(this, kwargs) %}
+(function(){
+  const map={{ this.map_name }};
+  const views={cellular:{{ this.cellular_layer }},wifi:{{ this.wifi_layer }}};
+  const masks={cellular:{{ this.cellular_mask }},wifi:{{ this.wifi_mask }}};
+  const uncertainty={{ this.uncertainty_layer }};
+  const zones={{ this.zone_layer }};
+  const basemap={{ this.basemap_layer }};
+  const markers={{ this.marker_js | safe }};
+  const data={{ this.inspect_json | safe }};
+  const geo={{ this.geometry_json | safe }};
+  const legend={{ this.legend_json | safe }};
+  const rules={{ this.rules_json | safe }};
+  let active='cellular';
+  basemap.on('tileerror',function(){const note=document.getElementById('basemap-note');note.textContent='Street basemap unavailable; signal and zone data remain usable.';note.style.display='block';});
+  basemap.on('tileload',function(){document.getElementById('basemap-note').style.display='none';});
+  L.control.zoom({position:'bottomright'}).addTo(map);
+  L.control.scale({position:'bottomright'}).addTo(map);
+  const panel=document.getElementById('campus-panel');
+  L.DomEvent.disableClickPropagation(panel);L.DomEvent.disableScrollPropagation(panel);
+  function refreshLegend(){
+    const name=active==='wifi'?'WiFi':'Cellular';
+    document.getElementById('legend-title').textContent=name+' signal · predicted dBm';
+    document.getElementById('legend-min').textContent=legend[active].vmin.toFixed(1)+' · weaker';
+    document.getElementById('legend-max').textContent=legend[active].vmax.toFixed(1)+' · stronger';
+    document.querySelector('.signal-gradient').style.background=active==='wifi'
+      ? 'linear-gradient(to right,#440154,#3b528b,#21918c,#5ec962,#fde725)'
+      : 'linear-gradient(to right,#a50026,#f46d43,#fee08b,#d9ef8b,#66bd63,#006837)';
+    document.getElementById('network-note').textContent=active==='wifi'
+      ? 'Modelled WiFi shows uniformly acceptable signal within the supported observed range; no poor zones identified. Outdoor WiFi absence is expected.'
+      : 'Poor at or below −101 dBm, only where observation support is sufficient. Cellular is the expected service outdoors.';
+    document.getElementById('uncertainty-note').textContent='Uncertain if SD > '+rules[active].uncertainty_sd_cutoff_dbm.toFixed(2)+' dBm or nearest observation > 50 m. '+legend[active].uncertain_cells.toLocaleString()+' uncertain cells; excluded from this network’s poor zones.';
+  }
+  map.on('baselayerchange',function(e){
+    active=e.layer===views.wifi?'wifi':'cellular';
+    uncertainty.clearLayers();uncertainty.addLayer(masks[active]);
+    refreshLegend();
+  });
+  document.querySelectorAll('[data-zone]').forEach(function(button){
+    button.addEventListener('click',function(){
+      const marker=markers[button.dataset.zone];
+      if(!map.hasLayer(zones))map.addLayer(zones);
+      map.setView(marker.getLatLng(),18);
+      marker.openPopup();
+      if(window.innerWidth<=760){panel.classList.remove('open');document.getElementById('panel-toggle').setAttribute('aria-expanded','false');}
+    });
+  });
+  document.getElementById('panel-toggle').addEventListener('click',function(){
+    const open=panel.classList.toggle('open');this.setAttribute('aria-expanded',String(open));
+  });
+  function inspectCell(latlng){
+    const x=(latlng.lng-geo.origin_lon)*geo.metres_per_lon_degree;
+    const y=(latlng.lat-geo.origin_lat)*geo.metres_per_lat_degree;
+    const col=Math.floor(x/5),row=Math.floor(y/5);
+    if(col<0||row<0||col>=geo.prediction_columns||row>=geo.prediction_rows)return null;
+    const index=row*geo.prediction_columns+col,part=data[active];
+    const status=['ok','poor','uncertain'][part.status[index]];
+    const context=['Outdoor','Academic cluster proxy','Hostel cluster proxy'][part.context[index]];
+    const note=active==='wifi'&&part.context[index]===0?'WiFi is not expected outdoors.':(status==='uncertain'?'Needs more data; excluded from poor-zone ranking.':'Meets the approved model classification rule.');
+    const body='<div class="zone-popup"><h3>'+(active==='wifi'?'WiFi':'Cellular')+' · '+status+'</h3><div class="popup-subtitle">'+context+'</div><table>'
+      +'<tr><th>Predicted signal</th><td>'+part.mean[index].toFixed(2)+' dBm</td></tr>'
+      +'<tr><th>Prediction SD</th><td>'+part.sd[index].toFixed(2)+' dBm</td></tr>'
+      +'<tr><th>Nearest observation</th><td>'+part.distance[index].toFixed(1)+' m</td></tr>'
+      +'<tr><th>Observed readings*</th><td>'+part.count[index]+'</td></tr></table><p>'+note+'</p><small>*Readings in the enclosing 10 m cell. Predicted values are not confirmed measurements.</small></div>';
+    L.popup({maxWidth:330}).setLatLng(latlng).setContent(body).openOn(map);
+    return {network:active,status:status,index:index};
+  }
+  map.on('click',function(e){inspectCell(e.latlng);});
+  if(window.innerWidth<=760)map.fitBounds(geo.bounds,{padding:[15,15]});
+  refreshLegend();
+  // Expose a small state object for reproducible browser verification.
+  window.deadzoneMap={map:map,views:views,masks:masks,uncertainty:uncertainty,zones:zones,markers:markers,
+    getActiveNetwork:()=>active,inspectCell:inspectCell};
+})();
+{% endmacro %}

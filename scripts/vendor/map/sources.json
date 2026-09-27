@@ -1,0 +1,22 @@
+{
+  "leaflet.js": {
+    "public_url": "https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js",
+    "sha256": "5819285cec137b229c94e1ee5ad73e8b6b84345a4367d60f75fe477fe0fb7b03"
+  },
+  "leaflet.css": {
+    "public_url": "https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css",
+    "sha256": "90b693d86392a4779c861b28cf307e7e59c3fb35328c4d8b95f58f814d38c722"
+  },
+  "jquery.min.js": {
+    "public_url": "https://code.jquery.com/jquery-3.7.1.min.js",
+    "sha256": "fc9a93dd241f6b045cbff0481cf4e1901becd0e12fb45166a8f17f95823f0b1a"
+  },
+  "LEAFLET-LICENSE.txt": {
+    "public_url": "https://cdn.jsdelivr.net/npm/leaflet@1.9.3/LICENSE",
+    "sha256": "97c194191510b19c72d25094922821a888d5d9bafb909ea7a38c9bf5b6c40a08"
+  },
+  "JQUERY-LICENSE.txt": {
+    "public_url": "https://cdn.jsdelivr.net/npm/jquery@3.7.1/LICENSE.txt",
+    "sha256": "d4db9ebe6f29f5168eac45ad713f055623ac5d0dcd5ba92da23d650ae012020d"
+  }
+}

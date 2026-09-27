@@ -1,0 +1,95 @@
+{
+  "map_file": "outputs\\maps\\deadzone_map.html",
+  "default_network": "cellular",
+  "network_selection": "Mutually exclusive heatmaps; active-network uncertainty updates automatically",
+  "uncertainty_default_on": true,
+  "heatmap_type": "Georeferenced 5 m predicted-dBm raster; uncertain means masked",
+  "layers": {
+    "cellular": {
+      "vmin": -118.11678787929708,
+      "vmax": -63.65537439126177,
+      "supported_cells": 18113,
+      "uncertain_cells": 20227,
+      "poor_cells": 6068,
+      "default_on": true
+    },
+    "wifi": {
+      "vmin": -82.89735784948653,
+      "vmax": -51.48733454808486,
+      "supported_cells": 12305,
+      "uncertain_cells": 26035,
+      "poor_cells": 0,
+      "default_on": false
+    }
+  },
+  "markers": [
+    {
+      "zone_id": "OUT-CELL-02",
+      "priority_rank": 1,
+      "priority_tier": 1,
+      "radius_px": 13,
+      "colour": "#cf4938",
+      "minor_fragment": false,
+      "label": "ranked zone"
+    },
+    {
+      "zone_id": "OUT-CELL-04",
+      "priority_rank": 2,
+      "priority_tier": 1,
+      "radius_px": 5,
+      "colour": "#657381",
+      "minor_fragment": true,
+      "label": "minor fragment, low confidence"
+    },
+    {
+      "zone_id": "OUT-CELL-03",
+      "priority_rank": 3,
+      "priority_tier": 1,
+      "radius_px": 5,
+      "colour": "#657381",
+      "minor_fragment": true,
+      "label": "minor fragment, low confidence"
+    },
+    {
+      "zone_id": "OUT-CELL-01",
+      "priority_rank": 4,
+      "priority_tier": 1,
+      "radius_px": 13,
+      "colour": "#cf4938",
+      "minor_fragment": false,
+      "label": "ranked zone"
+    },
+    {
+      "zone_id": "ACA-CELL-01",
+      "priority_rank": 5,
+      "priority_tier": 3,
+      "radius_px": 9,
+      "colour": "#316eb0",
+      "minor_fragment": false,
+      "label": "ranked zone"
+    },
+    {
+      "zone_id": "HOS-CELL-02",
+      "priority_rank": 6,
+      "priority_tier": 3,
+      "radius_px": 9,
+      "colour": "#316eb0",
+      "minor_fragment": false,
+      "label": "ranked zone"
+    },
+    {
+      "zone_id": "HOS-CELL-01",
+      "priority_rank": 7,
+      "priority_tier": 3,
+      "radius_px": 9,
+      "colour": "#316eb0",
+      "minor_fragment": false,
+      "label": "ranked zone"
+    }
+  ],
+  "input_classification": "data/processed/classified_cells.parquet",
+  "input_ranking": "outputs/ranked_dead_zones.csv",
+  "wifi_note": "Modelled WiFi shows uniformly acceptable signal within the supported observed range; no poor zones identified. Outdoor WiFi absence is expected.",
+  "runtime_note": "Data, rasters, Leaflet and jQuery embedded in HTML. Only optional street basemap tiles need internet; interactions work offline.",
+  "folium_raster_reference": "https://python-visualization.github.io/folium/v0.16.0/user_guide/raster_layers/image_overlay.html"
+}

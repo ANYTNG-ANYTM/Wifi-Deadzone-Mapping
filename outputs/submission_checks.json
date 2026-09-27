@@ -1,0 +1,33 @@
+{
+  "protected_sha256": {
+    "data/raw/cellular/Academic_Complex.csv": "223b5988797349d99a458015310187441d3dcb9e3e089e49e535a737692e1d02",
+    "data/raw/cellular/Academic_to_Hostel.csv": "59a2db85e2ac09e36390934ba2b3e4ff302b402c39a3969f8bb89e5e75251aa1",
+    "data/raw/cellular/Barak_1_30pm.csv": "c395a1c86dc9e4a5ef5cc4f8dde6160373d9de8484b0b2821dd65e75747a7ecc",
+    "data/raw/cellular/Hostel_to_Academic.csv": "958c9855b31d0d1dce33888f0521ce70c48f99c3c5cc0591fe376925fb07b5c4",
+    "data/raw/cellular/Umaim_6_30pm.csv": "a9e8cd337d1707b3035b9a3a19dd88f819381f0147c51256c469e8bf90b887a9",
+    "data/raw/cellular/Umiam_1pm.csv": "b00e7e646be53f2375de8b41dfd9887008bd098906eee17114e0d5c3b70c3aa0",
+    "data/raw/wifi/Barak_1_30pmWigleWifi.csv": "139d9095e71094443d4b5da33700f9dfdc0ee7fcb91394ca59fbcd2616093f39",
+    "data/raw/wifi/hostel_and_academic_WigleWifi.csv": "c126a1477aa534816fc6557b6456bdb9c5fd17bf2fd253a4ce52b69b4f1d1b1a",
+    "data/raw/wifi/Umiam_1pmWigleWifi.csv": "bb71a48e2e68390f74dd92ab46a364b8e29d34b1f340354e73ff78f36bd96753",
+    "data/raw/wifi/Umiam_evening_WigleWifi.csv": "c2dc78a96e53ea064d39d93833ea11500a4470dc13c9804e464e021e193c196e",
+    "data/processed/classified_cells.parquet": "1a3437059c5236724b8be76424845f14eac410b0267f57906545e4fccbc2ddde",
+    "data/processed/classified_grid.parquet": "663f797275788125ba2ba3369c9cee621f6f909b5918fde48d22ed9779ede440",
+    "data/processed/gpr_predictions.parquet": "41b577d00830d936452febd52c890129ce5a2cf29e9caada582e67011d48bb5e",
+    "data/processed/gpr_training_cells.parquet": "66286997709ee66bf8d83066a8cec19740a7e0f2a545b7853fda188769cbcad3",
+    "data/processed/gridded_readings.parquet": "5240e8912eab559332cac708eaca237ceeef93b3462ddf22d618c89ac8fb975e",
+    "data/processed/merged_readings.parquet": "14e9a206705e19b9b7f2de58fbacf4cb04eb7aee59aca6728670d3be57d74dfb",
+    "data/processed/needs_more_data.parquet": "4d3c5ba3b9c221014f9beea4ae0b8dead1854573005ed029a5597c71da9da090",
+    "data/processed/ranked_dead_zones.parquet": "045e3a1067e6250fdd838f2868c1a8da3995c407c9bb512e41ca715b9a0bd547",
+    "data/raw/manifest.csv": "92d82fcf6b6ff14870664f75c4ab577db54a6b20a652662aff56fd1505116f04"
+  },
+  "status": "PASS",
+  "checks": [
+    "All five stages rebuilt successfully in an isolated temporary directory",
+    "Every rebuilt Parquet table and ranked CSV matches submitted data (rtol=atol=1e-7)",
+    "Steps 3, 4, and offline desktop/mobile browser verification pass on rebuilt and submitted outputs",
+    "3081 observed readings: 2087 WiFi and 994 cellular; no synthetic observations",
+    "README links resolve and both ranked CSV paths agree",
+    "All original sensor CSVs, manifest, and locked Parquet SHA-256 hashes unchanged",
+    "Final syntax, hard-link identity, duplicate CSV, PNG placement, and cleanup audits pass (local .venv excluded)"
+  ]
+}

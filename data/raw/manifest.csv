@@ -1,0 +1,11 @@
+filename,network_type,route_id,session,direction,notes
+Barak_1_30pmWigleWifi.csv,wifi,barak,afternoon,,
+Umiam_1pmWigleWifi.csv,wifi,umiam,afternoon,,
+Barak_1_30pm.csv,cellular,barak,afternoon,,
+Umiam_1pm.csv,cellular,umiam,afternoon,,
+hostel_and_academic_WigleWifi.csv,wifi,hostel_academic_loop,evening,,continuous WiFi log covering full hostel-to-academic-to-hostel loop
+Umiam_evening_WigleWifi.csv,wifi,umiam,evening,,second WiFi session at Umiam
+Hostel_to_Academic.csv,cellular,route1,evening,to,recollected after cellular logging cap incident
+Academic_to_Hostel.csv,cellular,route2,evening,fro,salvaged tail of original loop attempt after cellular cap was hit mid-walk
+Academic_Complex.csv,cellular,academic_complex,evening,,single weekend snapshot; no time-of-day contrast collected due to holiday low activity
+Umaim_6_30pm.csv,cellular,umiam,evening,,second cellular session at Umiam ~6:30pm

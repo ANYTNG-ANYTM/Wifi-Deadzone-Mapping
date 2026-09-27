@@ -1,0 +1,13 @@
+{
+  "cell_size_m": 10.0,
+  "origin_lat": 26.183813,
+  "origin_lon": 91.68948224005878,
+  "reference_lat": 26.18698275,
+  "metres_per_lat_degree": 110790.86449394726,
+  "metres_per_lon_degree": 99958.68840767021,
+  "columns": 135,
+  "rows": 71,
+  "projection": "Local WGS84 linear approximation at reference latitude",
+  "aggregation": "Mean of all observed readings per cell and network across routes/sessions",
+  "empty_cells": "Omitted; not assigned zero or interpolated"
+}

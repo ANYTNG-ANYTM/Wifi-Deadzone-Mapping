@@ -1,0 +1,52 @@
+{
+  "prediction_spacing_m": 5.0,
+  "grid_shape": [
+    142,
+    270
+  ],
+  "grid_metadata": {
+    "cell_size_m": 10.0,
+    "origin_lat": 26.183813,
+    "origin_lon": 91.68948224005878,
+    "reference_lat": 26.18698275,
+    "metres_per_lat_degree": 110790.86449394726,
+    "metres_per_lon_degree": 99958.68840767021,
+    "columns": 135,
+    "rows": 71,
+    "projection": "Local WGS84 linear approximation at reference latitude",
+    "aggregation": "Mean of all observed readings per cell and network across routes/sessions",
+    "empty_cells": "Omitted; not assigned zero or interpolated"
+  },
+  "noise_method": "Network pooled within-cell variance / count plus fitted WhiteKernel residual",
+  "prediction_std_definition": "GP spatial posterior variance plus fitted residual variance; excludes new raw-reading measurement noise",
+  "latent_std_definition": "Spatial posterior standard deviation without WhiteKernel residual",
+  "mean_display_opacity": "1 - latent posterior variance / latent prior variance, clipped to [0,1]; not a probability",
+  "limitations": [
+    "Counts may overstate independent samples because wardrive readings are correlated.",
+    "Uncertainty is conditional on the fitted model and has not been calibrated on held-out routes.",
+    "Cells aggregate APs and sessions; maps describe pooled observations, not throughput or connectivity guarantees.",
+    "Near-prior means in unsupported areas are predictions, not evidence of coverage.",
+    "Prediction grid includes the less-than-10-m padding of the Step 2 rectangle."
+  ],
+  "sklearn_reference": "https://scikit-learn.org/stable/modules/gaussian_process.html",
+  "models": {
+    "wifi": {
+      "kernel": "0.655**2 * Matern(length_scale=58.5, nu=1.5) + WhiteKernel(noise_level=0.226)",
+      "target_offset_dbm": -70.58917734430416,
+      "target_scale_dbm": 13.30603500246112,
+      "random_seed": 42,
+      "optimizer_restarts": 2,
+      "optimizer_warnings": [],
+      "log_marginal_likelihood": -248.97848097261834
+    },
+    "cellular": {
+      "kernel": "0.896**2 * Matern(length_scale=85.9, nu=1.5) + WhiteKernel(noise_level=0.0212)",
+      "target_offset_dbm": -91.6424331963001,
+      "target_scale_dbm": 13.898221252359944,
+      "random_seed": 42,
+      "optimizer_restarts": 2,
+      "optimizer_warnings": [],
+      "log_marginal_likelihood": -274.2645033390605
+    }
+  }
+}
