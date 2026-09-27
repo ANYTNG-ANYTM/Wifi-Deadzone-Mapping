@@ -4,3 +4,17 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 outputs/.matplotlib/
+
+# Local editor settings, caches, and credentials
+.vscode/
+.idea/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.env
+.env.*
+!.env.example
+Thumbs.db
+Desktop.ini
+*.tmp
+*.bak

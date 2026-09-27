@@ -67,6 +67,7 @@ def main():
             shutil.copytree(ROOT / "scripts", stage / "scripts",
                             ignore=shutil.ignore_patterns("__pycache__"))
             shutil.copytree(ROOT / "data/raw", stage / "data/raw")
+            shutil.copytree(ROOT / "data/context", stage / "data/context")
             for script in STAGES + CHECKS:
                 run(stage, script)
             check_layout(stage)

@@ -4,7 +4,7 @@ A walked wardriving survey maps real WiFi and cellular signal readings to identi
 
 ![Cellular signal map with ranked zones and hatched areas of uncertainty](outputs/plots/cellular_deadzone_preview.png)
 
-*Cellular coverage and ranked priorities. Hatched areas indicate uncertainty. This offline preview omits the street basemap.* [Explore the interactive map](outputs/maps/deadzone_map.html).
+*Cellular coverage and ranked priorities. Hatched areas indicate uncertainty. The interactive HTML also includes campus streets and buildings.* [Explore the interactive map](outputs/maps/deadzone_map.html).
 
 ## Problem statement
 
@@ -49,7 +49,19 @@ Run all five stages and the verification checks without overwriting the locked s
 .\.venv\Scripts\python.exe -B scripts/dev/verify_submission.py
 ```
 
-This command rebuilds in a temporary directory, compares every rebuilt Parquet table with the locked outputs, checks the submitted outputs and map, and verifies protected-file SHA-256 hashes. It leaves the historical master report `outputs/submission_checks.json` unchanged and prints the current check results. Browser checks require installed Chrome or Edge and block external requests. Individual pipeline scripts write outputs beside their repository copy; run them directly only in a disposable copy. Open `outputs/maps/deadzone_map.html` to explore the submission; internet is needed only for the street basemap.
+This command rebuilds in a temporary directory, compares every rebuilt Parquet table with the locked outputs, checks the submitted outputs and map, and verifies protected-file SHA-256 hashes. It leaves the historical master report `outputs/submission_checks.json` unchanged and prints the current check results. Browser checks require installed Brave, Chrome, or Edge and block external requests. Individual pipeline scripts write outputs beside their repository copy; run them directly only in a disposable copy.
+
+Open `outputs/maps/deadzone_map.html` directly in Brave, Chrome, Edge, or VS Code's
+browser. Campus streets, buildings, and labels are embedded alongside the survey
+layers, so no web server or internet connection is needed. The survey panel can
+be shown or hidden at desktop and mobile widths. The display-only OpenStreetMap
+snapshot and its source/license details are in [data/context](data/context/README.md).
+
+The embedded basemap covers only the campus survey area. Panning beyond it shows
+an empty background; this version does not load a worldwide online map.
+GitHub's file viewer displays the HTML source rather than running the map.
+Clone or download the repository, then open `outputs/maps/deadzone_map.html`
+locally. The preview images above and below can be viewed directly on GitHub.
 
 ## Key results
 
@@ -69,4 +81,6 @@ This command rebuilds in a temporary directory, compares every rebuilt Parquet t
 - [Map controls and verification](docs/map_documentation.md)
 
 `data/processed/ranked_dead_zones.parquet` is the canonical ranking; `outputs/ranked_dead_zones.csv` is an independent human-readable export for judges. Development summaries and verification results are consolidated into the existing docs. Verification utilities are in `scripts/dev/`; required model artifacts, templates, and vendored map libraries/licenses are retained for reproducibility. PNG plots and map previews are in `outputs/plots/`; final check results and protected-file hashes are in `outputs/submission_checks.json`. `.venv/` is a local dependency environment excluded from the submission by `.gitignore`.
+
+Built with assistance from GPT Astra for pipeline implementation.
 

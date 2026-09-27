@@ -1,9 +1,15 @@
 # Step 5: interactive campus connectivity map
 
-Open `outputs/maps/deadzone_map.html` in a browser. The prediction data and raster
-images and display libraries are embedded in the HTML. Internet is needed only
-for the OpenStreetMap street basemap. Without it, the signal layers, markers,
-popups, and controls still work over a neutral background.
+Open `outputs/maps/deadzone_map.html` directly in a browser. Survey layers and a
+campus basemap of roads, buildings, lakes, and place labels are embedded in the
+HTML. It works without internet or a local server, including in Brave and the
+VS Code browser. The saved OpenStreetMap geometry is in
+`data/context/campus_basemap.geojson`, with provenance and ODbL license details.
+This bounded campus snapshot is used only for display; it does not change the
+signal models, classification rules, or building-context proxy.
+Panning outside the saved campus area shows an empty background: no worldwide
+online basemap is loaded. Download or clone the repository to open the HTML
+locally; GitHub's file viewer does not run the interactive map.
 
 ## Controls
 
@@ -16,8 +22,8 @@ popups, and controls still work over a neutral background.
   with reading count. Click them for the observed mean and count.
 - Click the heatmap for a predicted value, SD, distance to the nearest observation,
   status, and observation count in the parent 10 m cell.
-- Click a sidebar zone to open its popup and zoom to it. On a narrow screen, use
-  the Map guide & zones button to open the guide.
+- Click a sidebar zone to open its popup and zoom to it. Use the Show/Hide survey
+  panel button on desktop or mobile to clear or restore the map guide.
 
 ## Signal and uncertainty
 
@@ -27,7 +33,7 @@ where sample counts are higher. The renderer uses Folium's
 [ImageOverlay with Mercator projection](https://python-visualization.github.io/folium/v0.16.0/user_guide/raster_layers/image_overlay.html).
 
 Uncertain cells have no signal colour. Instead, a separate grey/hatched image
-shows them. Turning uncertainty off exposes the basemap, not an unsupported
+shows them. Turning uncertainty off exposes the embedded basemap, not an unsupported
 signal prediction. The mask uses exactly the approved Step 4 status field.
 
 The WiFi legend states that the model shows uniformly acceptable signal within
@@ -68,13 +74,13 @@ Use the project virtual environment:
 .\.venv\Scripts\python.exe scripts/dev/verify_step5.py
 ```
 
-Browser verification requires `requirements-dev.txt` and an installed Chrome or
-Edge. It launches a fresh headless browser without accessing a personal profile.
+Browser verification requires `requirements-dev.txt` and an installed Brave,
+Chrome, or Edge on Windows. It launches a fresh headless browser without accessing a personal profile.
 It blocks all external requests before they reach the network and checks layer
 defaults/switching, uncertainty masks, all popup values, fragment styling, cell
-inspection, sidebar navigation, mobile controls, and browser errors. Live basemap
-tile loading is not verified: automatic approval review rejected that test because
-tile requests disclose the map's geographic extent to external services.
+inspection, sidebar navigation, desktop/mobile controls, and browser errors.
+The checks also require rendered campus geometry, hostel labels, attribution,
+and zero external network requests.
 
 Leaflet and jQuery copies, licence files, public source URLs, and SHA-256 hashes
 are retained under `scripts/vendor/map`. `scripts/dev/fetch_map_assets.py` fetches only these
@@ -92,6 +98,6 @@ needed to explore the result; screenshots are only previews.
 - PASS: every uncertain cell masked from signal colour and present in the grey hatch raster.
 - PASS: all 7 popups match ranked CSV; both minor fragments have smaller dashed markers and labels.
 - PASS: sidebar navigation and mobile guide toggle; no browser JavaScript errors.
-- NOT TESTED: live street basemap tile loading; this verification deliberately blocks external requests.
+- PASS: embedded campus geometry and hostel labels rendered with external requests blocked.
 
 The verifier prints results without rewriting submission artifacts or preview PNGs.

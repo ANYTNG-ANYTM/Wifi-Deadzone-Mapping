@@ -11,20 +11,20 @@
   .legend-labels{display:flex;justify-content:space-between;font-size:11px;margin-top:4px;color:#455e67}.legend-note{font-size:11px;line-height:1.45;margin:8px 0}
   .hatch-key{display:inline-block;width:23px;height:12px;vertical-align:middle;margin-right:6px;background:repeating-linear-gradient(135deg,#ddd,#ddd 4px,#9a9a9a 4px,#9a9a9a 6px);border:1px solid #aaa}
   .hint{font-size:11px;line-height:1.45;color:#61727b}.zone-button{display:flex;width:100%;text-align:left;gap:9px;background:white;border:1px solid #e1e7ea;border-radius:6px;padding:8px;margin:5px 0;cursor:pointer;color:#213a46}.zone-button:hover{background:#f0f6f8;border-color:#92adb9}.rank-badge{background:var(--zone-colour);border-radius:50%;color:white;width:24px;height:24px;line-height:24px;text-align:center;flex:none;font-size:12px;font-weight:bold}.zone-copy strong{display:block;font-size:12px}.zone-copy span{display:block;font-size:10px;color:#62727c;margin-top:3px}.minor-button{background:#f8f9fa;opacity:.85}.minor-button .rank-badge{width:18px;height:18px;line-height:18px;background:transparent;border:1px dashed #657381;color:#657381;font-size:10px}
-  details{font-size:11px;margin-top:8px}summary{cursor:pointer;color:#60727d;padding:5px 0}.context-note{border-top:1px solid #dce4e8;padding-top:10px;font-size:11px;line-height:1.45;color:#61727b;margin-top:12px}.panel-toggle{display:none;position:absolute;left:12px;top:12px;z-index:1100;border:1px solid #ccd7dd;border-radius:6px;background:white;padding:9px;cursor:pointer}
+  details{font-size:11px;margin-top:8px}summary{cursor:pointer;color:#60727d;padding:5px 0}.context-note{border-top:1px solid #dce4e8;padding-top:10px;font-size:11px;line-height:1.45;color:#61727b;margin-top:12px}.panel-toggle{display:block;position:absolute;left:348px;top:16px;z-index:1100;border:1px solid #ccd7dd;border-radius:6px;background:white;padding:9px;cursor:pointer}.panel-toggle[aria-expanded="false"]{left:16px}.campus-panel.is-closed{display:none}
   .zone-popup{font-family:Arial,sans-serif;font-size:12px;line-height:1.45;min-width:230px}.zone-popup h3{font-size:17px;margin:0 0 3px;color:#233e4b}.popup-subtitle{font-size:11px;color:#657580;margin-bottom:10px}.zone-popup table{width:100%;border-collapse:collapse}.zone-popup th{text-align:left;color:#62727b;font-weight:normal;padding:4px 8px 4px 0}.zone-popup td{text-align:right;font-weight:600;padding:4px 0}.zone-popup p{margin:9px 0}.zone-popup small{color:#667680;font-size:10px}.fragment-note{padding:8px;background:#eef0f2;border-left:3px dashed #7c8993;margin-bottom:8px;color:#536371;font-weight:bold}
   .leaflet-control-layers{font:12px Arial,sans-serif;border-radius:8px!important;padding:10px!important}.leaflet-control-attribution{font-size:9px}
-  @media(max-width:760px){.campus-panel{display:none;top:58px;left:12px;bottom:auto;max-height:72vh;width:min(320px,calc(100vw - 24px))}.campus-panel.open{display:block}.panel-toggle{display:block}.leaflet-control-layers{max-width:210px;font-size:11px!important}}
+  @media(max-width:760px){.campus-panel{display:none;top:58px;left:12px;bottom:auto;max-height:72vh;width:min(320px,calc(100vw - 24px))}.campus-panel.open{display:block}.panel-toggle,.panel-toggle[aria-expanded="false"]{left:12px;top:12px}.leaflet-control-layers{max-width:210px;font-size:11px!important}}
 </style>
 {% endmacro %}
 
 {% macro html(this, kwargs) %}
-<button class="panel-toggle" id="panel-toggle" aria-expanded="false" aria-controls="campus-panel">Map guide & zones</button>
+<button class="panel-toggle" id="panel-toggle" aria-expanded="true" aria-controls="campus-panel">Hide survey panel</button>
 <aside class="campus-panel" id="campus-panel" aria-label="Campus connectivity map guide">
   <div class="eyebrow">IIT Guwahati · Campus survey</div>
   <h1>Connectivity<br>along the walk</h1>
   <p class="intro">Cellular coverage between the hostels and academic complex. WiFi is expected in building clusters.</p>
-  <p class="hint" id="basemap-note" style="display:none"></p>
+  <p class="hint" id="basemap-note">Campus streets and buildings are embedded for offline viewing.</p>
   <div class="stat-row"><div class="stat"><strong>7</strong>ranked zones</div><div class="stat"><strong>2</strong>minor fragments</div></div>
   <div id="legend-title">Cellular signal · predicted dBm</div>
   <div class="signal-gradient" aria-hidden="true"></div>
@@ -67,12 +67,20 @@
   const legend={{ this.legend_json | safe }};
   const rules={{ this.rules_json | safe }};
   let active='cellular';
-  basemap.on('tileerror',function(){const note=document.getElementById('basemap-note');note.textContent='Street basemap unavailable; signal and zone data remain usable.';note.style.display='block';});
-  basemap.on('tileload',function(){document.getElementById('basemap-note').style.display='none';});
+  map.attributionControl.addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> &middot; <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL</a>');
   L.control.zoom({position:'bottomright'}).addTo(map);
   L.control.scale({position:'bottomright'}).addTo(map);
   const panel=document.getElementById('campus-panel');
+  const panelToggle=document.getElementById('panel-toggle');
+  function setPanelOpen(open){
+    panel.classList.toggle('open',open);
+    panel.classList.toggle('is-closed',!open);
+    panelToggle.setAttribute('aria-expanded',String(open));
+    panelToggle.textContent=open?'Hide survey panel':'Show survey panel';
+  }
+  setPanelOpen(window.innerWidth>760);
   L.DomEvent.disableClickPropagation(panel);L.DomEvent.disableScrollPropagation(panel);
+  L.DomEvent.disableClickPropagation(panelToggle);
   function refreshLegend(){
     const name=active==='wifi'?'WiFi':'Cellular';
     document.getElementById('legend-title').textContent=name+' signal · predicted dBm';
@@ -97,12 +105,10 @@
       if(!map.hasLayer(zones))map.addLayer(zones);
       map.setView(marker.getLatLng(),18);
       marker.openPopup();
-      if(window.innerWidth<=760){panel.classList.remove('open');document.getElementById('panel-toggle').setAttribute('aria-expanded','false');}
+      if(window.innerWidth<=760)setPanelOpen(false);
     });
   });
-  document.getElementById('panel-toggle').addEventListener('click',function(){
-    const open=panel.classList.toggle('open');this.setAttribute('aria-expanded',String(open));
-  });
+  panelToggle.addEventListener('click',function(){setPanelOpen(panelToggle.getAttribute('aria-expanded')!=='true');});
   function inspectCell(latlng){
     const x=(latlng.lng-geo.origin_lon)*geo.metres_per_lon_degree;
     const y=(latlng.lat-geo.origin_lat)*geo.metres_per_lat_degree;
@@ -124,7 +130,7 @@
   if(window.innerWidth<=760)map.fitBounds(geo.bounds,{padding:[15,15]});
   refreshLegend();
   // Expose a small state object for reproducible browser verification.
-  window.deadzoneMap={map:map,views:views,masks:masks,uncertainty:uncertainty,zones:zones,markers:markers,
+  window.deadzoneMap={map:map,views:views,masks:masks,uncertainty:uncertainty,zones:zones,markers:markers,basemap:basemap,
     getActiveNetwork:()=>active,inspectCell:inspectCell};
 })();
 {% endmacro %}

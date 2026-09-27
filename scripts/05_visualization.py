@@ -25,6 +25,42 @@ TIER_STYLE = {1: {"colour": "#cf4938", "radius": 13},
 CONTEXT_LABELS = {"outdoor": "Outdoor", "academic_cluster": "Academic cluster", "hostel_cluster": "Hostel cluster"}
 
 
+def campus_basemap(map_object):
+    """Embed real OSM geometry so direct file viewing never needs tile servers."""
+    source = json.loads((ROOT / "data/context/campus_basemap.geojson").read_text(encoding="utf-8"))
+    folium.map.CustomPane("campusBasemap", z_index=150, pointer_events=False).add_to(map_object)
+    folium.map.CustomPane("campusLabels", z_index=450, pointer_events=False).add_to(map_object)
+    styles = {
+        "land": {"color": "#c4d5b4", "weight": 0.5, "fillColor": "#dce8cc", "fillOpacity": 0.8},
+        "water": {"color": "#83b8cc", "weight": 1, "fillColor": "#b3dbe7", "fillOpacity": 1},
+        "building": {"color": "#b1aaa0", "weight": 0.7, "fillColor": "#d9d2c9", "fillOpacity": 1},
+        "road": {"color": "#fffdf7", "weight": 4, "opacity": 1},
+        "path": {"color": "#b9ad98", "weight": 1.5, "dashArray": "3 3", "opacity": 0.9},
+        "stream": {"color": "#83b8cc", "weight": 2, "opacity": 1},
+    }
+    layer = folium.FeatureGroup(name="Campus streets and buildings", control=False).add_to(map_object)
+    folium.GeoJson(source, style_function=lambda f: styles[f["properties"]["kind"]],
+                   pane="campusBasemap", interactive=False, smooth_factor=0.5).add_to(layer)
+    names = set()
+    for feature in source["features"]:
+        props, geometry = feature["properties"], feature["geometry"]
+        name = props.get("name", "")
+        if not name or name in names or props["kind"] not in {"building", "water"}:
+            continue
+        coords = geometry["coordinates"][0] if geometry["type"] == "Polygon" else geometry["coordinates"]
+        lon, lat = np.mean(coords, axis=0)
+        if not (26.179 <= lat <= 26.195 and 91.685 <= lon <= 91.708):
+            continue
+        names.add(name)
+        folium.Marker([lat, lon], pane="campusLabels", interactive=False,
+                      icon=folium.DivIcon(html=f'<div class="campus-place-label">{html.escape(name)}</div>',
+                                          icon_size=(140, 30), icon_anchor=(70, 15))).add_to(layer)
+    map_object.get_root().header.add_child(Element(
+        '<style>.leaflet-container{background:#f1efe7!important}.campus-place-label{font:11px Arial,sans-serif;'
+        'color:#455455;text-align:center;text-shadow:0 0 3px white,0 0 3px white;pointer-events:none}</style>'))
+    return layer, len(source["features"])
+
+
 def raster_images(part, shape, vmin, vmax):
     """Keep uncertain means transparent and draw a separate grey hatch mask."""
     uncertainty = part.status.eq("uncertain").to_numpy().reshape(shape)
@@ -78,10 +114,10 @@ def main():
                geometry["origin_lon"] + width / geometry["metres_per_lon_degree"]]]
     center = np.mean(bounds, axis=0).tolist()
     map_object = folium.Map(location=center, zoom_start=16, tiles=None,
-                            control_scale=False, prefer_canvas=True, zoom_control=False,
+                            control_scale=False, prefer_canvas=False, zoom_control=False,
                             zoom_snap=0.25, zoom_delta=0.5)
     # Embed only the two libraries this map uses. No CDN requests are necessary
-    # when opening the final HTML; OSM basemap tiles remain the only online layer.
+    # when opening the final HTML. Geographic context is embedded below too.
     vendor = ROOT / "scripts/vendor/map"
     map_object.default_js = []
     map_object.default_css = []
@@ -90,9 +126,7 @@ def main():
     for asset in ["leaflet.js", "jquery.min.js"]:
         source = (vendor / asset).read_text(encoding="utf-8")
         header.add_child(Element("<script>" + source + "\n</script>"), name="embedded_" + asset)
-    # The basemap is always present. Network FeatureGroups become the radio
-    # choices in LayerControl, so the two signal surfaces cannot obscure each other.
-    basemap = folium.TileLayer("OpenStreetMap", control=False, name="OpenStreetMap").add_to(map_object)
+    basemap, basemap_feature_count = campus_basemap(map_object)
     views, masks, inspect_data, layer_stats = {}, {}, {}, {}
     for network in ["cellular", "wifi"]:
         part = cells.loc[cells.network_type.eq(network)].sort_values(["y_m", "x_m"])
@@ -205,8 +239,10 @@ def main():
         "layers": layer_stats, "markers": marker_metadata,
         "input_classification": "data/processed/classified_cells.parquet",
         "input_ranking": "outputs/ranked_dead_zones.csv",
+        "basemap": {"source": "data/context/campus_basemap.geojson", "feature_count": basemap_feature_count,
+                    "mode": "Embedded OpenStreetMap geometry; no external tile requests"},
         "wifi_note": "Modelled WiFi shows uniformly acceptable signal within the supported observed range; no poor zones identified. Outdoor WiFi absence is expected.",
-        "runtime_note": "Data, rasters, Leaflet and jQuery embedded in HTML. Only optional street basemap tiles need internet; interactions work offline.",
+        "runtime_note": "Survey data, campus basemap geometry, rasters, Leaflet and jQuery embedded in HTML. No network requests are needed.",
         "folium_raster_reference": "https://python-visualization.github.io/folium/v0.16.0/user_guide/raster_layers/image_overlay.html",
     }
     (output / "map_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")

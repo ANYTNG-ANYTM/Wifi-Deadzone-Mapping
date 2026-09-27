@@ -89,7 +89,12 @@
   ],
   "input_classification": "data/processed/classified_cells.parquet",
   "input_ranking": "outputs/ranked_dead_zones.csv",
+  "basemap": {
+    "source": "data/context/campus_basemap.geojson",
+    "feature_count": 171,
+    "mode": "Embedded OpenStreetMap geometry; no external tile requests"
+  },
   "wifi_note": "Modelled WiFi shows uniformly acceptable signal within the supported observed range; no poor zones identified. Outdoor WiFi absence is expected.",
-  "runtime_note": "Data, rasters, Leaflet and jQuery embedded in HTML. Only optional street basemap tiles need internet; interactions work offline.",
+  "runtime_note": "Survey data, campus basemap geometry, rasters, Leaflet and jQuery embedded in HTML. No network requests are needed.",
   "folium_raster_reference": "https://python-visualization.github.io/folium/v0.16.0/user_guide/raster_layers/image_overlay.html"
 }

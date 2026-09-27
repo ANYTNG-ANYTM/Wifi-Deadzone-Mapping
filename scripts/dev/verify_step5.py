@@ -1,9 +1,9 @@
-"""Check the generated Folium map in the installed Chrome or Edge browser.
+"""Check the generated Folium map in an installed Brave, Chrome, or Edge browser.
 
 Run: .venv/Scripts/python.exe scripts/dev/verify_step5.py
 Requires requirements-dev.txt. Uses a fresh headless browser, never a personal
 browser profile. All external requests are aborted before network access; this
-checks interactions offline and does not test the live street basemap.
+checks the embedded campus basemap and interactions offline.
 """
 
 import json
@@ -36,18 +36,20 @@ def main():
         assert (heat[:, :, 3][~uncertain] > 0).all()
         np.testing.assert_array_equal(mask[::4, ::4, 3] > 0, uncertain)
 
-    candidates = [Path("C:/Program Files/Google/Chrome/Application/chrome.exe"),
+    candidates = [Path("C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"),
+                  Path("C:/Program Files/Google/Chrome/Application/chrome.exe"),
                   Path("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe")]
     executable = next((p for p in candidates if p.exists()), None)
     if executable is None:
-        raise RuntimeError("No Chrome or Edge installation found")
+        raise RuntimeError("No Brave, Chrome, or Edge installation found")
     errors = []
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch(executable_path=str(executable), headless=True)
         page = browser.new_page(viewport={"width": 1440, "height": 1000}, device_scale_factor=1)
         # Never disclose survey geography to a tile server during verification.
-        page.route("https://**/*", lambda route: route.abort())
-        page.route("http://**/*", lambda route: route.abort())
+        external_requests = []
+        page.route("https://**/*", lambda route: (external_requests.append(route.request.url), route.abort()))
+        page.route("http://**/*", lambda route: (external_requests.append(route.request.url), route.abort()))
         page.on("pageerror", lambda error: errors.append(str(error)))
         page.goto(map_file.as_uri(), wait_until="networkidle", timeout=60000)
         page.wait_for_function("window.deadzoneMap !== undefined", timeout=30000)
@@ -61,6 +63,18 @@ def main():
         assert state["uncertainty"] and state["cellMask"] and not state["wifiMask"]
         assert state["markers"] == 7
         assert state["tiles"] == 0, "Offline verification must not load external tiles"
+        assert page.evaluate("window.deadzoneMap.map.hasLayer(window.deadzoneMap.basemap)")
+        assert page.evaluate("window.deadzoneMap.map.getPane('campusBasemap').querySelectorAll('path').length") > 100
+        assert page.locator('.campus-place-label').filter(has_text='Umiam Hostel').count() == 1
+        assert page.locator('.campus-place-label').filter(has_text='Barak Hostel').count() == 1
+        assert page.locator('.leaflet-control-attribution').inner_text().find('OpenStreetMap contributors') >= 0
+        panel_toggle = page.locator("#panel-toggle")
+        assert panel_toggle.is_visible() and panel_toggle.get_attribute("aria-expanded") == "true"
+        panel_toggle.click()
+        assert not page.locator("#campus-panel").is_visible()
+        assert panel_toggle.get_attribute("aria-expanded") == "false"
+        panel_toggle.click()
+        assert page.locator("#campus-panel").is_visible()
         for row in ranked.itertuples(index=False):
             details = page.evaluate("""id => {
               const m=window.deadzoneMap.markers[id];m.openPopup();
@@ -109,6 +123,7 @@ def main():
         assert page.locator("#campus-panel").is_visible()
         assert page.locator("#panel-toggle").get_attribute("aria-expanded") == "true"
         assert not errors, errors
+        assert not external_requests, external_requests
         browser.close()
     report = "\n".join([
         "PASS: cellular on / WiFi off by default, with visible uncertainty; external requests blocked.",
@@ -116,8 +131,8 @@ def main():
         "PASS: uncertainty toggle remains consistent across network changes.",
         "PASS: every uncertain cell masked from signal colour and present in the grey hatch raster.",
         "PASS: all 7 popups match ranked CSV; both minor fragments have smaller dashed markers and labels.",
-        "PASS: sidebar navigation and mobile guide toggle; no browser JavaScript errors.",
-        "NOT TESTED: live street basemap tile loading; this verification deliberately blocks external requests.",
+        "PASS: sidebar navigation and desktop/mobile survey panel toggle; no browser JavaScript errors.",
+        "PASS: embedded campus roads, buildings, hostel labels, and attribution rendered; zero external requests.",
     ])
     print(report)
 
